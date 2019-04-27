@@ -1,0 +1,86 @@
+---
+title: ''
+author: "Guilherme NºUSP: 8943160 e Leonardo NºUSP: 9793436"
+header-includes:
+   - \usepackage{ragged2e}
+   - \usepackage{multirow}
+output: pdf_document
+---
+
+# Exercício 5
+
+A Tabela 1 apresenta a concentração de NbOCl3 em um reator de fluxo em pistão como função de diversas variáveis controláveis. Os dados podem ser obtidos em ftp://ftp.wiley.com/public/sci_tech_med/introduction_linear_regression, em um arquivo de extensão .zip, sob o nome data-table-B6.XLS.
+
+\center
+Tabela 1: Concentração de NbOCl3 (g-mol/L) (y) em um reator de fluxo em pistão e variáveis controláveis: concentração de COCl2 ($x_1$, em g-mol/L); tempo ($x_2$, em segundos); densidade molar ($x_3$, em g-mol/L) e fração molar de CO2 ($x_4$, em g-mol/L).
+
+\begin{tabular}{ccccc}
+\hline
+\textbf{y} & \textbf{x1} & \textbf{x2} & \textbf{x3} & \textbf{x4} \\ \hline
+0,00045 & 0,0105 & 90,9 & 0,0164 & 0,0177 \\
+0,00045 & 0,011 & 84,6 & 0,0165 & 0,0172 \\
+0,000473 & 0,0106 & 88,9 & 0,0164 & 0,0157 \\
+0,000507 & 0,0116 & 488,7 & 0,0187 & 0,0082 \\
+0,000457 & 0,0121 & 454,4 & 0,0187 & 0,007 \\
+0,000452 & 0,0123 & 439,2 & 0,0187 & 0,0065 \\
+0,000453 & 0,0122 & 447,1 & 0,0186 & 0,0071 \\
+0,000426 & 0,0122 & 451,6 & 0,0187 & 0,0062 \\
+0,001215 & 0,0123 & 487,8 & 0,0192 & 0,0153 \\
+0,001256 & 0,0122 & 467,6 & 0,0192 & 0,0129 \\
+0,001145 & 0,0094 & 95,4 & 0,0163 & 0,0354 \\
+0,001085 & 0,01 & 87,1 & 0,0162 & 0,0342 \\
+0,001066 & 0,0101 & 82,7 & 0,0162 & 0,0323 \\
+0,001111 & 0,0099 & 87 & 0,0163 & 0,0337 \\
+0,001364 & 0,011 & 516,4 & 0,019 & 0,0161 \\
+0,001254 & 0,0117 & 488,4 & 0,0189 & 0,0149 \\
+0,001396 & 0,011 & 534,5 & 0,0189 & 0,0163 \\
+0,001575 & 0,0104 & 542,3 & 0,0189 & 0,0164 \\
+0,001615 & 0,0067 & 98,8 & 0,0163 & 0,0379 \\
+0,001733 & 0,0066 & 84,8 & 0,0162 & 0,036 \\
+0,002753 & 0,0044 & 69,6 & 0,0163 & 0,0327 \\
+\multicolumn{1}{l}{0,003186} & \multicolumn{1}{l}{0,0073} & \multicolumn{1}{l}{436,9} & \multicolumn{1}{l}{0,0189} & \multicolumn{1}{l}{0,0263} \\
+\multicolumn{1}{l}{0,003227} & \multicolumn{1}{l}{0,0078} & \multicolumn{1}{l}{406,3} & \multicolumn{1}{l}{0,0192} & \multicolumn{1}{l}{0,02} \\
+\multicolumn{1}{l}{0,003469} & \multicolumn{1}{l}{0,0067} & \multicolumn{1}{l}{447,9} & \multicolumn{1}{l}{0,0192} & \multicolumn{1}{l}{0,0197} \\
+\multicolumn{1}{l}{0,001911} & \multicolumn{1}{l}{0,0091} & \multicolumn{1}{l}{58,5} & \multicolumn{1}{l}{0,0164} & \multicolumn{1}{l}{0,0331} \\
+\multicolumn{1}{l}{0,002588} & \multicolumn{1}{l}{0,0079} & \multicolumn{1}{l}{394,3} & \multicolumn{1}{l}{0,0177} & \multicolumn{1}{l}{0,0674} \\
+\multicolumn{1}{l}{0,002635} & \multicolumn{1}{l}{0,0068} & \multicolumn{1}{l}{461} & \multicolumn{1}{l}{0,0174} & \multicolumn{1}{l}{0,077} \\
+\multicolumn{1}{l}{0,002725} & \multicolumn{1}{l}{0,0065} & \multicolumn{1}{l}{469,2} & \multicolumn{1}{l}{0,0173} & \multicolumn{1}{l}{0,078} \\ \hline
+\end{tabular}
+
+\justify
+
+(a) Formalize e estime um modelo de regressão linear múltiplo com intercepto relacionando a concentração
+de NbOCl3 à concentração de COCl2 $(x_1)$ e fração molar $(x_4)$.
+
+### Resolução
+
+O modelo de regressão linear múltiplo a ser utilizado é da forma $Y_{i}=\beta_{0}+\beta_{1}x_{1i}+\beta_{4}x_{4i}+e_{i}$ supondo $\mathbb{E}(e_{i})=0$ e $Var(e_{i})=\sigma^2$ e $e_1,..,e_n$ independentes. Relacionando a concentração de NbOCl3 à concentração de COCl2 $(x_1)$ e fração molar $(x_4)$.
+
+Logo temos nossa reta estimada: $\widehat{Y}=\widehat{\beta_{0}}+\widehat{\beta_{1}}x_{1i}+\widehat{\beta_{4}}x_{4i}=0.004833-0.34498x_{1i}-0.00014x_{4i}$
+
+```{r, echo=F}
+library(readxl)
+
+dados <- read_xls("data-table-B6.XLS")
+attach(dados)
+model <- lm(y~x1+x4,data = dados)
+```
+\newpage
+(b) Para quais valores de $x_1$ e $x_4$, dentro da região experimental, a resposta estimada $\widehat{Y}$ é máxima? Qual é esse máximo?
+
+### Resolução
+
+Os valores de $x_1$ e $x_4$, dentro da região experimental são: $x_1=0.0067$ e $x_4=0.0197$
+
+O valor máximo de $\widehat{Y}$ é:
+
+```{r}
+max(model$fitted.values)
+```
+
+
+(c) Estude as covariáveis e argumente a favor ou contra existência de multicolinearidade no modelo ajustado.
+
+### Resolução
+
+Podemos notar a existência de multicolinearidade no modelo ajustado $\widehat{Y}=0.004833-0.34498x_{1i}-0.00014x_{4i}$, pois analisando a matriz $$(X^TX)=\begin{pmatrix} 28.0000 & 0.27030000 & 0.74120000 \\ 0.2703  & 0.00274965 & 0.00632464 \\ 0.7412  & 0.00632464 & 0.03005396 \end{pmatrix}$$ Podemos notar elementos muito próximos de zero (uma possível singularidade), além de que o $det(X^TX)=2.166*10^{-5}$ também é muito próximo de zero, dando a entender que existe alguma dependência lienar entre as linhas da matriz $(X^TX)$, e támbem temos que a correlação entre as covariáveis é $cor(x_1,x_4)=-0.686$ sendo mais um fator a favor da multicolinearidade, por ter uma relação forte negativa entre as covariáveis, assim trazendo grandes consequencias no cálculo da matriz $(X^TX)^{-1}$, pois seus elementos ficariam muito grandes, consequentemente levando a um modelo pouco confiável e possíveis análises erroneas.
