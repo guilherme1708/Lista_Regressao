@@ -45,3 +45,14 @@ f <- F(C0, c0, beta.MQ, sigma2.hat, length(Y)) # estatística F e o p-valor
 
 x0 <- c(1,10,0)
 mu0 <- x0%*%beta.MQ
+
+# item e
+y1 <- c(17.93,18.82,15.39,14.21,14.16,14.87,9.67,13.41,11.06,8.55,5.12,7.9)
+y2 <- c(15.69,17.04,16.21,16.96,14.83,15.07,15.33,14.46,12.70,13.11,11.23,11.32)
+xk <- c(0,0,0,2,2,2,6,6,6,10,10,10)
+A <- data.frame(y1,xk)
+B <- data.frame(y2,xk)
+ggplot(A,aes(x=xk,y=y1)) + geom_smooth(method = lm) + geom_point() + labs(y ="ln(Nº de colônias)", x ="Espécie A") +
+  ggtitle("curva estimada com IC de 95%") 
+ggplot(B,aes(x=xk,y=y2)) + geom_smooth(method = lm) + geom_point()+ labs(y ="ln(Nº de colônias)", x ="Espécie B") +
+  ggtitle("curva estimada com IC de 95%") 
