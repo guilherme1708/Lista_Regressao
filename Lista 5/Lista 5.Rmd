@@ -1,0 +1,180 @@
+---
+title: ''
+author: "Guilherme NºUSP: 8943160 e Leonardo NºUSP: 9793436"
+header-includes:
+   - \usepackage{ragged2e}
+   - \usepackage{multirow}
+output: pdf_document
+---
+
+# Exercício 4
+
+Um experimento foi conduzido para avaliar o número de colônias de 2 espécies de bactérias, A e B, presentes após 2 dias em meios de cultura com 4 níveis distintos de um antibiótico, a saber 0 $\mu$L, 2.5 $\mu$L, 6 $\mu$L e 10 $\mu$L. Os dados encontram-se na Tabela 1, com Y , a variável resposta, sendo o logaritmo do número de colônias.
+\center
+Tabela 1: Dados do experimento de cultivo de bactérias da espécie A (esquerda) e B (direita).
+\begin{tabular}{cclcc}
+\cline{1-2} \cline{4-5}
+ln (Nº de colônias) & Volume de Antibiótico &  & ln (Nº de colônias) & Volume de Antibiótico \\ \cline{1-2} \cline{4-5} 
+17.93 & 0 &  & 15.69 & 0 \\
+18.82 & 0 &  & 17.04 & 0 \\
+15.39 & 0 &  & 16.21 & 0 \\
+14.21 & 2 &  & 16.96 & 2 \\
+14.16 & 2 &  & 14.83 & 2 \\
+14.87 & 2 &  & 15.07 & 2 \\
+9.67 & 6 &  & 15.33 & 6 \\
+13.41 & 6 &  & 14.46 & 6 \\
+11.06 & 6 &  & 12.70 & 6 \\
+8.55 & 10 &  & 13.11 & 10 \\
+5.12 & 10 &  & 11.23 & 10 \\
+7.91 & 10 &  & 11.32 & 10 \\ \cline{1-2} \cline{4-5} 
+\end{tabular}
+\justify
+
+(a) Formalize um modelo de regressão linear múltiplo no qual ambas as espécies apresentam o mesmo intercepto, porém coeficientes angulares distintos. Apresente as suposições desse modelo e suas estimativas. *Dica: Use um modelo similar ao do exercício 3.*
+
+### Resolução
+
+O modelo a ser utilizado é o $Y_i= \beta_{0} + \beta_{1}x_{1i}+ \beta_{2}x_{2i} + e_i$, $i \in \{ 1,..24 \}$ com $e_i \overset{iid}{\sim} N(0,\sigma^2)$, $\sum_{i=1}^{2n} x_{1i} = \sum_{i=1}^{2n} x_{2i}, \ \sum_{i=1}^{n} x_{2i}=\sum_{i=n+1}^{2n} x_{1i}=0 \ i \in \{ 1,..,2n \}$ com $n=12$.
+Pelo Método dos mínimos quadrados temos que $\widehat\beta_{MQ}= \begin{pmatrix} 16.726\\ -0.943\\ -0.471\\ \end{pmatrix}$
+
+Assim sua reta estimada é $$\widehat\mu_i = 16.726 - 0.943x_{1i} - 0.471x_{2i}$$
+
+```{r, echo=F}
+y <- c(17.93,18.82,15.39,14.21,14.16,14.87,9.67,13.41,11.06,8.55,5.12,7.91,
+      15.69,17.04,16.21,16.96,14.83,15.07,15.33,14.46,12.70,13.11,11.23,11.32)
+
+x1 <- c(0,0,0,2,2,2,6,6,6,10,10,10,rep(0,12))
+x2 <- c(rep(0,12),0,0,0,2,2,2,6,6,6,10,10,10)
+x <- matrix(c(x1,x2),24,2)
+
+Y <- cbind(y)
+X <- cbind(1,x)
+
+n <- length(Y)  # tamanho da amostra
+V <- solve(t(X)%*%X) # (X'X)-¹
+D <- V%*%t(X) # (X'X)-¹*X'
+
+beta.MQ <- D%*%Y # matriz Beta0 e beta1 estimados
+sigma2.hat <- as.numeric(t(Y)%*%(diag(n) - X%*%D)%*%Y/(n-4)) # variancia estimada não viciada
+sigma.hat <- sqrt(sigma2.hat) # desvio padrão estimada não viciada
+
+model <- lm(formula = Y ~ x) # modelo de regressão
+```
+
+(b) Apresente a matriz de variâncias e covariâncias estimadas dos parâmetros da regressão. Usando-a, obtenha intervalos de confiança marginais de coeficente $\gamma$ = 95% para os parâmetros em questão.
+
+### Resolução
+
+A matriz de Covariâncias estimada é:
+
+```{r echo=F}
+Matrix.cov <- sigma2.hat*V # matriz de covariancias 
+```
+
+$$\widehat\sigma^2(X^TX)^{-1}= 1.567\begin{pmatrix} 0.0988 & -0.0127 & -0.0127\\ -0.0127 & 0.004 & 0.0016 \\ -0.0127 & 0.0016 & 0.004\\ \end{pmatrix} =\begin{pmatrix} 0.1549 & -0.0199 & -0.0199\\ -0.0199 & 0.0063 & 0.0025\\ -0.0199 & 0.0025 & 0.0063 \end{pmatrix}$$
+
+Sabemos que o intervalo de confiança marginal para $\beta_i$ com $i \in \{0,..2 \}$ com coeficente $\gamma$ = 95% é: $$IC(\beta_i,\gamma)= \widehat\beta_i \pm t_{(\frac{1+\gamma}{2},n-p-1)}\widehat\sigma_{\widehat\beta_i}$$ em que $T_{\widehat\beta_i}=\frac{\beta_{iMV}-\beta_i}{\widehat\beta_i} \sim t_{n-p-1}$ para $i=0,..,p$ e $\widehat\sigma_{\widehat\beta_i}^2=\widehat\sigma^2C_i(X^TX)^{-1}C_i^T$ e $\widehat\sigma^2=\frac{1}{n-p-1}(Y-X\widehat\beta)^T(Y-X\widehat\beta)$
+
+Para $\beta_0$ temos: $C_0=(1,0,0)$ $\widehat\sigma_{\widehat\beta_0}^2=0.1549 \Rightarrow \widehat\sigma_{\widehat\beta_0}=0.393$
+
+$IC(\beta_0,0.95)= \widehat\beta_0 \pm t_{(0.975,21)}\widehat\sigma_{\widehat\beta_0}=16.726 \pm 2.08*0.393= 16.726 \pm 0.817$
+
+Para $\beta_1$ temos: $C_0=(0,1,0)$ $\widehat\sigma_{\widehat\beta_1}^2=0.0063 \Rightarrow \widehat\sigma_{\widehat\beta_1}=0.0793$
+
+$IC(\beta_1,0.95)= \widehat\beta_1 \pm t_{(0.975,21)}\widehat\sigma_{\widehat\beta_1}=-0.943 \pm 2.08*0.0793=-0.943 \pm 0.1649$
+
+Para $\beta_2$ temos: $C_0=(0,0,1)$ $\widehat\sigma_{\widehat\beta_2}^2=0.0063 \Rightarrow \widehat\sigma_{\widehat\beta_1}=0.0793$
+
+$IC(\beta_2,0.95)= \widehat\beta_2 \pm t_{(0.975,21)}\widehat\sigma_{\widehat\beta_2}=-0.471 \pm 2.08*0.0793=-0.471 \pm 0.1649$
+
+(c) Os pesquisadores postulam a hipótese de que “as espécies A e B *respondem de forma semelhante aos incrementos adotados do antibiótico*”. Traduza esta hipótese na linguagem da estatística, apresente o valor-*p* obtido e teste-a ao nível de 5% de significância.
+
+### Resolução
+
+A hipótese a ser testada em linguagem estatística é:
+
+$$\left\{ \begin{array}{ll}
+H_{0}:\beta_1 =\beta_2 \\ 
+H_{1}:\beta_1 \neq \beta_2 \end{array} \right.\ $$
+
+Escrevendo o teste acima na forma linear geral, temos:
+
+$$\left\{ \begin{array}{ll}
+H_{0}:C\beta = d \\ 
+H_{1}:C\beta_1 \neq d \end{array} \right.\ $$
+
+Onde $C=(0,1, -1)$ e $\beta= \begin{pmatrix} \beta_0\\ \beta_1\\ \beta_2\\ \end{pmatrix}$ e $d=0$
+
+Logo calculando a estatística de teste, temos:
+
+$$F_{\widehat\beta,C,d}=\frac{(C\widehat\beta-d)^T[C(X^TX)^{-1}C^T]^{-1}(C\widehat\beta-d)}{k\widehat\sigma^2}$$
+Assim Sob $H_0$, $F_{\widehat\beta,C,d} \sim F_{k,n-p-1}$:
+$$F_{\widehat\beta,C,d}=\frac{(C\widehat\beta)^T[C(X^TX)^{-1}C^T]^{-1}(C\widehat\beta)}{k\widehat\sigma^2}=28.375$$
+Assim seu P-*valor* = $\mathbb{P}(F_{1,21}>F_{\widehat\beta,C,d}^{Obs})=\mathbb{P}(F_{1,21}>28.375)=0.00002$
+
+Logo temos evidências estatísticas para rejeitar $H_0$, logo os valores de $\beta_1 \neq \beta_2$
+```{r echo = F}
+F <- function(C,c,beta,sigma2,n){ # Função para calcular a estatística F e o p-valor
+  k <- nrow(C)
+  F.obs <- as.numeric(t(C%*%beta - c)%*% solve( C%*% solve(t(X)%*%X) %*% t(C)) %*% (C%*%beta-c)/(k*sigma2))
+  p.valor = 1 - pf(F.obs,k,n-2)
+  return(c(F.obs,p.valor))
+}
+
+#H_0: B1 - B2 = 0
+C0 <- matrix(c(0,-1,1),1,3) # Matriz C
+c0 <- 0 # Vetor c
+f <- F(C0, c0, beta.MQ, sigma2.hat, length(Y)) # estatística F e o p-valor
+```
+
+(d) Para uma nova observação $x_0$ da espécie A, com 10 $\mu$L antibiótico, mostre como obter e apresente os intervalos de confiança (e de predição, respectivamente) de coeficiente $\gamma$ = 95% para
+
+i. $\mu(x_0)= x_0^{T}\beta$
+ii. $Y_0= x_0^{T}\beta + e_0$
+
+### Resolução
+
+Para i. $\mu(x_0)= x_0^{T}\beta$, Sabemos que $$\widehat\mu_0 \sim N(\mu_0,\sigma^2x_0^T(X^TX)^{-1}x_0)$$ Assim temos que $$\frac{\widehat\mu_0 -\widehat\mu}{\sqrt{\sigma^2x_0^T(X^TX)^{-1}x_0}} \sim t_{(n-p-1)}$$ e $\widehat\sigma_{\widehat\mu_0}^2=\widehat\sigma^2x_0^T(X^TX)^{-1}x_0$
+Logo $$IC(\mu_0,\gamma)=[\widehat\mu_0 -t_{(\frac{1+\gamma}{2},n-p-1)}\widehat\sigma_{\widehat\mu_0},\widehat\mu_0 +t_{(\frac{1+\gamma}{2},n-p-1)}\widehat\sigma_{\widehat\mu_0}]$$
+Utilizando nossos dados, logo $x_0^T=(1,10,0)$ e $\widehat\beta= \begin{pmatrix} 16.726\\ -0.943\\ -0.471\\ \end{pmatrix} \Rightarrow \widehat\mu_0=x_0^T\widehat\beta=7.29$ , $$\widehat\sigma_{\widehat\mu_0}=\sqrt{1.647*0.246}=0.201$$ e $t_{(\frac{1+\gamma}{2},n-p-1)}=t_{(0.975,21)}=2.08$  Assim o intervalo de confiança é: $$IC(\mu_0,0.95)= 7.29 \pm 2.08*0.201=7.29 \pm 0.418$$
+
+```{r echo = FALSE}
+x0 <- c(1,10,0)
+mu0 <- x0%*%beta.MQ
+
+```
+
+Para ii. $Y_0= x_0^{T}\beta + e_0$ Sabemos que um preditor não viciado para $Y_0$ é $\mu_0$, pois o preditor para o erro do modelo $e_0$ é zero. O intervalo de predição para $Y_0$ com coeficiente de confiança de
+$\gamma$ é dado por: $$IC(Y_0,\gamma)=[\widehat{Y}_0-t_{(\frac{1+\gamma}{2},n-p-1)}\widehat\sigma_{\widehat{Y}_0},\widehat{Y}_0+t_{(\frac{1+\gamma}{2},n-p-1)}\widehat\sigma_{\widehat{Y}_0}]$$ em que $\widehat{Y}_0=\widehat\mu_0$ e $\widehat\sigma_{\widehat{Y}_0}^2=\widehat\sigma^2(1+x_0^T(X^TX)^{-1}x_0)$
+Utilizando os dados: $x_0^T=(1,10,0)$ e $\widehat\beta= \begin{pmatrix} 16.726\\ -0.943\\ -0.471\\ \end{pmatrix} \Rightarrow \widehat\mu_0=x_0^T\widehat\beta=7.29$ , $$\widehat\sigma_{\widehat{Y}_0}=\sqrt{1.647*1.246}=1.433$$ e $t_{(\frac{1+\gamma}{2},n-p-1)}=t_{(0.975,21)}=2.08$ Assim o intervalo de confiança é: $$IC(Y_0,0.95)= 7.29 \pm 2.08*1.433=7.29 \pm 2.979$$
+
+(e) Apresente, em dois gráficos separados, as curvas estimadas de regressão para as espécies A e B com respectivos intervalos de confiança $\gamma$ = 95% para as médias estimadas dentro da região experimental.
+
+### Resolução
+
+O modelo de regressão, pode ser escrito da seguinte forma $$\left\{ \begin{array}{ll} Y_i = \beta_0 + \beta_1x_{1i} + e_i, \ se \ i \in \{ 1,..,12 \} \ (Especie \ A) \\ Y_i = \beta_0  + \beta_2x_{2i} + e_i, \ se \ i \in \{ 13,..,24 \} \ (Especie \ B) \end{array} \right.\ $$
+
+Assim as retas estimadas são:
+$$\left\{ \begin{array}{ll} Y_i = 16.726 -0.943x_{1i}  \ se \ i \in \{ 1,..,12 \} \ (Especie \ A) \\ Y_i = 16.726  -0.471x_{2i}  \ se \ i \in \{ 13,..,24 \} \ (Especie \ B) \end{array} \right.\ $$
+
+\center
+```{r echo=FALSE, message=FALSE, out.width='70%'}
+library(ggplot2)
+
+# item e
+y1 <- c(17.93,18.82,15.39,14.21,14.16,14.87,9.67,13.41,11.06,8.55,5.12,7.9)
+y2 <- c(15.69,17.04,16.21,16.96,14.83,15.07,15.33,14.46,12.70,13.11,11.23,11.32)
+xk <- c(0,0,0,2,2,2,6,6,6,10,10,10)
+
+A <- data.frame(y1,xk)
+B <- data.frame(y2,xk)
+
+ggplot(A,aes(x=xk,y=y1)) + geom_smooth(method = lm) + geom_point() + labs(y ="ln(Nº de colônias)", x ="Espécie A") +
+  ggtitle("curva estimada com IC de 95%") 
+
+ggplot(B,aes(x=xk,y=y2)) + geom_smooth(method = lm) + geom_point()+ labs(y ="ln(Nº de colônias)", x ="Espécie B") +
+  ggtitle("curva estimada com IC de 95%") 
+
+
+```
+
