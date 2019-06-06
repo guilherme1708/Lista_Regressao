@@ -1,0 +1,561 @@
+---
+title: "Lista 6 - MAE0328"
+author: "Guilherme Navarro NºUSP:8943160 Leonardo Noronha NºUSP:9793436"
+header-includes:
+   - \usepackage{ragged2e}
+output: pdf_document
+---
+
+# Exercício 1
+
+Considere os dados da Tabela 1 sobre um experimento de evolução de calor na hidratação de cimento $(Y)$, em calorias por grama, de composições distintas no que diz respeito à porcentagem de aluminato de cálcio $(x_1)$, silicato tricálcico $(x_2)$, aluminoferrite tetracálcico $(x_3)$ e silicato dicálcico $(x_4)$. Os dados encontram-se no pacote MPV do software R sob o nome cement.
+
+\center
+Tabela 1: Dados de um experimento com cimento conhecidos como *Hald Cement Data*.
+\begin{tabular}{ccccc}
+\hline
+Y & $x_1$ & $x_2$ & $x_3$ & $x_4$ \\ \hline
+78,5 & 7 & 26 & 6 & 60 \\
+74,3 & 1 & 29 & 15 & 52 \\
+104,3 & 11 & 56 & 8 & 20 \\
+87,6 & 11 & 31 & 8 & 47 \\
+95,9 & 7 & 52 & 6 & 33 \\
+109,2 & 11 & 55 & 9 & 22 \\
+102,7 & 3 & 71 & 17 & 6 \\
+72,5 & 1 & 31 & 22 & 44 \\
+93,1 & 2 & 54 & 18 & 22 \\
+115,9 & 21 & 47 & 4 & 26 \\
+83,8 & 1 & 40 & 23 & 34 \\
+113,3 & 11 & 66 & 9 & 12 \\
+109,4 & 10 & 68 & 8 & 12 \\ \hline
+\end{tabular}
+\justify
+
+(a)  Formalize e ajuste um modelo de regressão múltipla para esses dados considerando todas as quatro covariáveis. Calcule os resíduos studentizados modificados $t_i^{*}, \ i \in \{1,..,13\}$
+
+### Resolução
+```{r echo=FALSE}
+library(MPV)
+
+data("cement")
+attach(cement)
+
+model <- lm(y~x1+x2+x3+x4)
+```
+
+Considerando o modelo de regressão linear múltipla que consiste em $Y_i=\beta_0+\beta_{1}x_{1i}+...+\beta{p}x_{pi}+e_i$ onde os $e_i$ são independentes $\forall \ i \ \in \{1,..,n\}$ e  $\mathbb{E}(e_i)=0$ e $Var(e_i)=\sigma^2$.
+
+Assim, nossa reta estimada é : $\widehat{\mu}_i=62.41+1.55x_{1i}+0.51x_{2i}+0.10x_{3i}-0.144x_{4i}$
+
+Os redíduos studentizados modificados $t_i^{*}, \ i \in \{1,..,13\}$ foram calculados utilizando a fórmula $$t_i^{*}=\frac{\widehat{e}_i}{\sigma_{(i)}\sqrt{1-h_{ii}}}, \ i \in \{1,..,13\}$$ e obtimos o seguinte resultado:
+
+```{r echo=FALSE}
+p <- 4
+n <- length(y)
+Influence <- lm.influence(model)
+sigma.hat <- summary(model)$sigma
+t <- resid(model)/(sigma.hat*sqrt(1-Influence$hat))
+resid(model)/(Influence$sigma*sqrt(1-Influence$hat))
+D <- t^2*Influence$hat/((p+1)*(1- Influence$hat))
+
+```
+\newpage
+
+(b) Esboce e comente os seguintes gráficos:
+
+i. de quantil dos resíduos contras os quantis esperados de uma normal padrão;
+
+\center
+```{r echo=FALSE, out.width="70%"}
+qqnorm(resid(model),pch=19)
+qqline(resid(model))
+```
+\justify
+Podemos notar que os pontos estão bem ajustados a reta, logo a suposição de normalidade parece válida.
+
+ii. de resíduos contra os índices das unidades amostrais;
+
+\center
+```{r echo=FALSE, out.width="70%"}
+plot(rep(1:13),resid(model), xlab="Unidades Amostrais", ylab="Resíduos", xlim=c(0.5,13.5), main="Resíduos x Unidades amostrais",pch=19)
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+```
+\justify
+Podemos notar que a maioria das observações estão entre -3 e 3 e dispersas de forma aleatória (sem a presença de alguma linha de tendência)
+\newpage
+
+iii. dos resíduos contra $\widehat{\mu}_i, \ i \in \{1,..,13\}$;
+
+\center
+```{r echo=FALSE, out.width="70%"}
+plot(model$fitted.values,resid(model), pch=19, main="Resíduos x Valores Preditos", ylab="Resíduos", xlab="Valores Preditos")
+abline(h=0,lty=3)
+```
+\justify
+Podemos notar que a distribuição dos pontos é aleatória logo não temos problemas com heterocedasticidade.
+
+iv. de resíduos contra cada uma das covariáveis;
+
+\center
+```{r echo=FALSE, out.width="70%"}
+par(mfrow=c(2,2))
+plot(x1,resid(model),pch=19, ylab="Resíduos", xlab=expression(x[1]))
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+plot(x2,resid(model),pch=19, ylab="Resíduos", xlab=expression(x[2]))
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+plot(x3,resid(model),pch=19, ylab="Resíduos", xlab=expression(x[3]))
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+plot(x4,resid(model),pch=19, ylab="Resíduos", xlab=expression(x[4]))
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+
+```
+\justify
+Podemos notar que há uma evidência de relação equivocada ou falta de alguma covariável para explicar o modelo.
+
+\newpage
+v. das distâncias de Cook;
+
+\center
+```{r echo=FALSE, out.width="70%"}
+plot(D,ylab=expression(D[i]), main="Distância de Cook", pch=19)
+points(8,D[8],pch=19,col=2)
+abline(h=3*mean(D),lty=3)
+```
+\justify
+Com o gráfico da distância de cook, podemos notar que temos somente um ponto que está acima do limite $3*\bar{D}$.
+
+vi. de alavancagem;
+
+\center
+```{r echo=FALSE, out.width="70%"}
+plot(Influence$hat, ylab=expression(h[ii]), main="Pontos de alavanca", pch=19)
+abline(h=2*(p+1)/n,lty=3)
+```
+\justify
+Podemos notar que não há pontos de alavacagem, pois o maior ponto de alavancagem é 0.7 e o limite que define pontos de alavancagem é de 0.769.
+
+\newpage
+vii. de envelope simulado;
+
+\center
+```{r echo=FALSE, out.width="70%"}
+envelope = function(fit0){
+  Influence = lm.influence(fit0)
+  t.M = resid(fit0)/(Influence$sigma*sqrt(1-Influence$hat))
+  n = length(t.M)
+  X  = model.matrix(fit0)
+  H = X%*%solve(t(X)%*%X)%*%t(X) 
+  I = diag(n)
+  yy = matrix(rnorm(n*100),n,100)
+  A = matrix(0,n,100)
+  LI = LS = numeric(n)
+  A = (I - H)%*%yy/sqrt(diag(I - H))
+  A = apply(A,2,sort)
+  B = t(apply(A,1,sort))
+  LI = (B[,2]+B[,3])/2
+  LS = (B[,97]+B[,98])/2
+  med= apply(B,1,mean)
+  aux = range(t.M,LS,LI)
+  #par(pty="s")
+  qqnorm(t.M,xlab="Percentil da N(0,1)", ylab="Ressíduo Studentizado modificado", ylim=aux,pch=16, main="")
+  par(new=TRUE)
+  qqnorm(LI,axes=F,xlab="",ylab="",type="l",lty=1,ylim=aux)
+  par(new=TRUE)
+  qqnorm(LS,axes=F,xlab="",ylab="", type="l", lty=1,ylim=aux)
+  par(new=TRUE)
+  qqnorm(med,axes=F,xlab="",ylab="",type="l",ylim=aux,lty=2)
+}
+
+envelope(model)
+```
+\justify
+Podemos notar que com o envelope simulado, que os dados que estão no qqplot do item i. confirmam a hipótese de normalidade para os erros do modelo.
+
+(c) Calcule os fatores de inflação da variância $FIV_j$ para cada covariável e analise se existe um problema de multicolinearidade
+
+### Resolução
+
+```{r echo=FALSE}
+
+model1 <- lm(x1 ~ x2 + x3 + x4, data=cement)
+FIV.1 <- 1/(1-summary(model1)$r.squared)
+
+model2 <- lm(x2 ~ x1 + x3 + x4, data=cement)
+FIV.2= 1/(1-summary(model2)$r.squared)
+
+model3<- lm(x3 ~ x2 + x1 + x4, data=cement)
+FIV.3= 1/(1-summary(model3)$r.squared)
+
+model4<- lm(x4 ~ x1 + x2 + x3, data=cement)
+FIV.4= 1/(1-summary(model4)$r.squared)
+```
+
+Utilizando a fórmula $$FIV_j=\frac{1}{1-R_{j}^2}$$
+
+Obtivemos:
+
+$FIV_1 = 38.49$
+
+$FIV_2 = 254.423$
+
+$FIV_3 = 46.868$
+
+$FIV_4 = 282.512$
+
+Geralmente, o VIF é indicativo de problemas de multicolinearidade se $VIF>10$ como todos os valores estão maiores que 10 é recomendável remover as cováriáveis que apresentam maior VIF.
+
+(d) Remova a(s) covariável(is) que apresentaram multicolinearidade, ajuste novamente o modelo e refaça o item (a). Verifique se o ajuste melhorou, justificando sua resposta.
+
+### Resolução
+
+```{r echo=FALSE}
+fit0 <- lm(y ~ x1 + x2 + x3)
+
+model5 <- lm(x1 ~ x2 + x3, data=cement)
+FIV.5 <- 1/(1-summary(model5)$r.squared)
+
+model6 <- lm(x2 ~ x1 + x3, data=cement)
+FIV.6 <- 1/(1-summary(model6)$r.squared)
+
+model7 <- lm(x3 ~ x2 + x1, data=cement)
+FIV.7 <- 1/(1-summary(model7)$r.squared)
+```
+
+Removendo a covariável que apresentou o maior VIF (no caso $x_4$) temos que o novo modelo é do tipo $Y_i=\beta_0+\beta_{1}x_{1i}+\beta_{2}x_{2i}+\beta{3}x_{3i}+e_i$ onde os $e_i$ são independentes $\forall \ i \ \in \{1,..,13\}$ e  $\mathbb{E}(e_i)=0$ e $Var(e_i)=\sigma^2$.
+
+Assim, nossa reta estimada é : $\widehat{\mu}_i=48.19+1.7x_{1i}+0.66x_{2i}+0.25x_{3i}$
+
+Recalculando o $VIF_j$ para no novo modelo obtivemos:
+
+$FIV_1 = 3.25$
+
+$FIV_2 = 1.06$
+
+$FIV_3 = 3.14$
+
+Como todos os valores estão abaixo de 10, o problema de multicolinearidade foi resolvido.
+
+Os resíduos para o novo modelo são:
+```{r echo=F}
+p <- 3
+n <- length(y)
+Influence <- lm.influence(fit0)
+sigma.hat <- summary(fit0)$sigma
+t <- resid(fit0)/(sigma.hat*sqrt(1-Influence$hat))
+resid(fit0)/(Influence$sigma*sqrt(1-Influence$hat))
+D <- t^2*Influence$hat/((p+1)*(1- Influence$hat))
+```
+
+(e) Considerando novamente todas as covariáveis da Tabela 1, apresente uma implementação computacional do algoritmo de seleção backward. Faça a seleção de um modelo utilizando seu algoritmo com $q_s = 0.05$. Compare esse com o modelo obtido no item (d).
+
+### Resolução
+
+```{r}
+
+```
+
+# Exercício 2
+
+Um experimento para avaliar o crescimento de bactérias *E. coli* foi conduzido da seguinte maneira: 1) foram utilizados 30 recipicientes com o mesmo número de bactérias da mesma espécie; 2) o i-ésimo recipiente foi exposto à temperatura de 70ºF pelo tempo de $x_i$ minutos; 3) ao final do tempo $x_i$, o número de bactérias resultante foi contado $(Y_i)$. A Tabela 2 apresenta o número de bactérias e os respectivos tempos de exposição.
+
+\center
+Tabela 2: Número de bactérias $(Y)$ e tempo $(x)$, em minutos
+\begin{tabular}{ccc|ccc}
+\hline
+\textbf{$i$} & \textbf{$Y_i$} & \textbf{$x_i$} & \textbf{$i$} & \textbf{$Y_i$} & \textbf{$x_i$} \\ \hline
+1 & 20 & 1 & 16 & 150 & 26 \\
+2 & 60 & 3 & 17 & 80 & 28 \\
+3 & 20 & 4 & 18 & 130 & 30 \\
+4 & 60 & 6 & 19 & 60 & 31 \\
+5 & 30 & 8 & 20 & 30 & 33 \\
+6 & 30 & 9 & 21 & 150 & 35 \\
+7 & 10 & 11 & 22 & 80 & 36 \\
+8 & 60 & 13 & 23 & 100 & 38 \\
+9 & 50 & 15 & 24 & 200 & 40 \\
+10 & 80 & 16 & 25 & 120 & 42 \\
+11 & 40 & 18 & 26 & 100 & 43 \\
+12 & 90 & 20 & 27 & 110 & 45 \\
+13 & 140 & 21 & 28 & 80 & 47 \\
+14 & 40 & 23 & 29 & 160 & 48 \\
+15 & 100 & 25 & 30 & 150 & 50 \\ \hline
+\end{tabular}
+\justify
+
+\newpage
+(a) Ajuste o modelo linear $Y_i=\beta_0 + \beta_{1}x_i +e_i$, em que $e_i \overset{iid}{\sim} N(0,\sigma^2), \ i \in \{1,...,30\}$
+
+### Resolução
+
+```{r echo=FALSE}
+Y <- c(20,60,20,60,30,30,10,60,50,80,40,90,140,40,100,
+  150,80,130,60,30,150,80,100,200,120,100,110,80,160,150)
+
+X <- c(1,3,4,6,8,9,11,13,15,16,18,20,21,23,25,
+       26,28,30,31,33,35,36,38,40,42,43,45,47,48,50)
+
+# item a
+
+fit <- lm(Y~X)
+```
+
+O modelo ajustado tem equação: $\widehat{\mu}_i=26.76+2.26x_i$
+
+(b) Apresente o gráfico de dispersão com a reta estimada. Faça uma análise de resíduos e verifique se há indícios de desvio das suposições do modelo.
+
+### Resolução
+
+\center
+```{r echo=FALSE, out.width="70%"}
+n <- length(X)
+p <- 2
+Influence <- lm.influence(fit)
+sigma.hat <- summary(fit)$sigma
+d <- resid(fit)/sigma.hat
+t <- resid(fit)/(sigma.hat*sqrt(1-Influence$hat))
+t.M <- resid(fit)/(Influence$sigma*sqrt(1-Influence$hat))
+D <- t^2*Influence$hat/((p)*(1- Influence$hat))
+
+plot(Y~X, main="Diagrama de dispersão", xlab="Tempo", ylab="Número de Bactérias")
+abline(fit)
+```
+\justify
+
+Fazendo uma análise de resíduos, temos:
+
+\center
+```{r echo=FALSE, out.width="70%"}
+
+par(mfrow=c(2,2))
+plot(Influence$hat, ylab=expression(h[ii]), main="Pontos de alavanca")
+abline(h=2*(p+1)/n,lty=3)
+plot(t.M,ylab="Resíduo studentizado modificado", main="Resíduos studentizados Modificados",ylim=c(-4,4),type="l")
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+
+plot(t.M ~ predict(fit),ylab="Resíduo studentizado modificado", main="Resíduos studentizados Modificados",ylim=c(-4,4),xlab=expression(hat(mu)[i]))
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+
+plot(D,ylab=expression(D[i]), main="Distância de Cook")
+abline(h=3*mean(D),lty=3)
+```
+\justify
+
+\center
+```{r echo=FALSE, out.width="70%"}
+envelope(fit)
+```
+\justify
+
+Podemos notar que há uma pequena tendência de a variância aumentar conforme o valor predito aumenta, sendo possível então uma transformação de Box-Cox para aumentar a eficiência do modelo. 
+
+(c) Aplique a transformação de Box-Cox, reajuste o modelo e refaça a análise de resíduos. Verifique se a transformação raiz quadrada pode ser utilizada.
+
+### Resolução 
+
+\center
+```{r echo=FALSE, message=FALSE, out.width="70%"}
+library(MASS)
+boxcox(fit) # 1/2
+```
+\justify
+
+Oberservando o intervalo de confiança obtido pelo método de Box-Cox, podemos concluir que o melhor $\lambda=0.5$, agora refazendo o diagrama de dispersão e a análise de resíduos novamente com os dados transformados, temos: 
+
+\center
+```{r echo=FALSE, message=FALSE, out.width="70%"}
+Y <- c(20,60,20,60,30,30,10,60,50,80,40,90,140,40,100,
+  150,80,130,60,30,150,80,100,200,120,100,110,80,160,150)
+X <- c(1,3,4,6,8,9,11,13,15,16,18,20,21,23,25,
+       26,28,30,31,33,35,36,38,40,42,43,45,47,48,50)
+Y1 <- Y^(1/2)
+
+fit1 <- lm(Y1~X)
+
+f = function(x) (fit1$coef[1] + fit1$coef[2]*x)^(2)
+
+plot(Y1~X,main="Diagrama de dispersão", xlab="Tempo", ylab="Raiz quadrada do número de Bactérias")
+abline(fit1)
+
+Influence <- lm.influence(fit1)
+sigma.hat <- summary(fit1)$sigma
+d <- resid(fit1)/sigma.hat
+t <- resid(fit1)/(sigma.hat*sqrt(1-Influence$hat))
+t.M <- resid(fit1)/(Influence$sigma*sqrt(1-Influence$hat))
+D <- t^2*Influence$hat/(2*(1- Influence$hat))
+
+par(mfrow=c(2,2))
+
+plot(Influence$hat, ylab=expression(h[ii]), main="Pontos de alavanca")
+abline(h=2*(p)/n,lty=3)
+plot(t.M,ylab="Resíduo studentizado modificado", main="Resíduos studentizados Modificados",ylim=c(-4,4),type="l")
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+
+plot(t.M ~ predict(fit1),ylab="Resíduo studentizado modificado", main="Resíduos studentizados Modificados",ylim=c(-4,4),xlab=expression(hat(mu)[i]))
+abline(h=-3,lty=3)
+abline(h=3,lty=3)
+
+plot(D,ylab=expression(D[i]), main="Distância de Cook")
+abline(h=3*mean(D),lty=3)
+```
+```{r echo=FALSE, message=FALSE, out.width="70%"}
+envelope(fit1)
+```
+\justify
+
+Podemos notar que a curva no diagrama de disperção e o envelope simulado são mais adequados aos dados que os da análise inicial.
+
+# Exercício 5
+
+Para os dados da Tabela 3, suponha um modelo de regressão linear simples $Y_i=\beta_0 + \beta_{1}x_i +e_i$, em que $e_i \overset{iid}{\sim} N(0,\sigma^2), \ i \in \{1,...,20\}$
+
+\center
+Tabela 3: Variável resposta $(Y_i)$ e covariável $x_i$.
+\begin{tabular}{ccc|ccc}
+\hline
+\textbf{$i$} & \textbf{$Y_i$} & \textbf{$x_i$} & \textbf{$i$} & \textbf{$Y_i$} & \textbf{$x_i$} \\ \hline
+1 & 28,29 & 6 & 11 & 39,45 & 8 \\
+2 & 45,58 & 10 & 12 & 36,90 & 8 \\
+3 & 33,49 & 7 & 13 & 42,07 & 8 \\
+4 & 40,27 & 7 & 14 & 31,83 & 8 \\
+5 & 49,56 & 9 & 15 & 55,11 & 11 \\
+6 & 40,00 & 15 & 16 & 48,29 & 10 \\
+7 & 21,83 & 5 & 17 & 20,58 & 5 \\
+8 & 33,96 & 7 & 18 & 43,49 & 9 \\
+9 & 57,07 & 9 & 19 & 60,27 & 11 \\
+10 & 49,90 & 9 & 20 & 34,56 & 6 \\ \hline
+\end{tabular}
+\justify
+
+(a) Apresente as estimativas de máxima verossimilhança dos parâmetros $\beta_0$, $\beta_1$ e $\sigma^2$ e, ao nível de 5% de significância, teste a hipótese $H_0:\beta_1 =5$ contra $H_1:\beta_1 \neq 5$
+
+### Resolução
+
+```{r echo=FALSE}
+y <- c(28.29,45.58,33.49,40.27,49.56,40.00,21.83,33.96,
+       57.07,49.90,39.45,36.90,42.07,31.83,55.11,48.29,20.58,43.49,60.27,34.56)
+
+x <- c(6,10,7,7,9,15,5,7,9,9,8,8,8,8,11,10,5,9,11,6)
+
+# item a
+
+Y <- cbind(y) # matriz de variável resposta
+X <- cbind(1,x) # matriz de dados (fixados)
+n <- length(Y)  # tamanho da amostra
+V <- solve(t(X)%*%X) # (X'X)-¹
+D <- V%*%t(X) # (X'X)-¹*X'
+
+beta.MQ <- D%*%Y # matriz Beta0 e beta1 estimados
+sigma2.hat <- as.numeric(t(Y)%*%(diag(n) - X%*%D)%*%Y/(n-2)) # variancia estimada não viciada
+sigma.hat <- sqrt(sigma2.hat) # desvio padrão estimada não viciada
+
+fit0 <- lm(y~x)
+
+F <- function(C,c,beta,sigma2,n){ # Função para calcular a estatística F e o p-valor
+  k <- nrow(C)
+  F.obs <- as.numeric(t(C%*%beta - c)%*% solve( C%*% solve(t(X)%*%X) %*% t(C)) %*% (C%*%beta - c)/(k*sigma2))
+  p.valor = 1 - pf(F.obs,k,n-2)
+  return(c(F.obs,p.valor))
+}
+
+#H_0: B1 = 5
+C <- matrix(c(0,1),1,2) # Matriz C
+d <- 5 # Vetor d
+F.obs <- F(C, d, beta.MQ, sigma2.hat, length(Y)) # estatística F e o p-valor
+
+```
+
+As estimativas de máxima verossimilhança para os parâmetros $\beta_0$, $\beta_1$ e $\sigma^2$ são 
+$\begin{pmatrix} \widehat{\beta_0} \\  \widehat{\beta_1} \end{pmatrix}=\begin{pmatrix} 14.315 \\ 3.132 \end{pmatrix}$ e a estimativa de máxima verossimilhança não viciada para $\sigma^2$ é $\widehat{\sigma}^2=68.331$
+
+Agora o teste, $H_0:\beta_1 =5$ contra $H_1:\beta_1 \neq 5$ tomando a estatística $F_{\widehat\beta,C,d}=\frac{(C\widehat\beta-d)^T[C(X^TX)^{-1}C^T]^{-1}(C\widehat\beta-d)}{k\widehat\sigma^2}$
+
+Tomando a matriz $C=(0 \ 1)$ e $d=5$ e $k=1$, obtendo $$F_{\widehat\beta,C,d}^{obs}=5.35$$ e seu valor-*p*$=\mathbb{P}(F_{k,n-2} > F_{\widehat\beta,C,d}^{obs}) = \mathbb{P}(F_{1,18} > F_{\widehat\beta,C,c}^{obs}) =0.032$. Logo temos evidencias estatísticas para rejeitar a hipótese nula a um nível de significância de 5%.
+
+(b) Calcule a distância de Cook para cada observação. Usando critério apropriado, discuta se há observações possivelmente influentes nas estimativas do modelo de regressão.
+
+### Resolução
+
+\center
+```{r echo=FALSE, out.width="70%"}
+Influence <- lm.influence(fit0)
+p <- 2
+sigma.hat <- summary(fit0)$sigma
+d <- resid(fit0)/sigma.hat
+t <- resid(fit0)/(sigma.hat*sqrt(1-Influence$hat))
+t.M <- resid(fit0)/(Influence$sigma*sqrt(1-Influence$hat))
+D <- t^2*Influence$hat/((p)*(1- Influence$hat))
+
+plot(D,ylab=expression(D[i]), main="Distância de Cook")
+points(6,D[6],pch=19,col=2)
+abline(h=3*mean(D),lty=3)
+```
+\justify
+
+Podemos observar pelo gráfico, pelo critério de que um ponto é influente de $D_i>3*\bar{D}$ onde $\bar{D}=0.3$, logo temos apenas um ponto influente é o ponto de índice 6 onde $D_6=5.41$.
+
+(c) Removendo as observações potencialmente influentes, refaça o item (a). Suas conclusões inferencias foram diferentes? Argumente contra ou a favor do modelo pressuposto para esse conjunto de dados.
+
+### Resolução
+
+\center
+```{r echo=FALSE, out.width="60%"}
+y1 <- c(28.29,45.58,33.49,40.27,49.56,21.83,33.96,
+       57.07,49.90,39.45,36.90,42.07,31.83,55.11,48.29,20.58,43.49,60.27,34.56)
+
+x1 <- c(6,10,7,7,9,5,7,9,9,8,8,8,8,11,10,5,9,11,6)
+
+Y <- cbind(y1) # matriz de variável resposta
+X <- cbind(1,x1) # matriz de dados (fixados)
+n <- length(Y)  # tamanho da amostra
+V <- solve(t(X)%*%X) # (X'X)-¹
+D <- V%*%t(X) # (X'X)-¹*X'
+
+beta.MQ <- D%*%Y # matriz Beta0 e beta1 estimados
+sigma2.hat <- as.numeric(t(Y)%*%(diag(n) - X%*%D)%*%Y/(n-2)) # variancia estimada não viciada
+sigma.hat <- sqrt(sigma2.hat) # desvio padrão estimada não viciada
+
+fit1 <- lm(y1~x1)
+
+
+Influence <- lm.influence(fit1)
+p <- 2
+sigma.hat <- summary(fit1)$sigma
+d <- resid(fit1)/sigma.hat
+t <- resid(fit1)/(sigma.hat*sqrt(1-Influence$hat))
+t.M <- resid(fit1)/(Influence$sigma*sqrt(1-Influence$hat))
+D <- t^2*Influence$hat/((p)*(1- Influence$hat))
+
+plot(D,ylab=expression(D[i]), main="Distância de Cook", xlim=c(0,20))
+points(8,D[8],pch=19,col=2)
+abline(h=3*mean(D),lty=3)
+
+#H_0: B1 = 5
+C <- matrix(c(0,1),1,2) # Matriz C
+d <- 5 # Vetor d
+F1 <- F(C, d, beta.MQ, sigma2.hat, length(Y)) # estatística F e o p-valor
+```
+\justify
+
+Removendo a observação potencialmente influente e refazendo o teste do item a, as estimativas de máxima verossimilhança para os parâmetros $\beta_0$, $\beta_1$ e $\sigma^2$ são 
+$\begin{pmatrix} \widehat{\beta_0} \\  \widehat{\beta_1} \end{pmatrix}=\begin{pmatrix} -4.776 \\ 5.642 \end{pmatrix}$ e a estimativa de máxima verossimilhança não viciada para $\sigma^2$ é $\widehat{\sigma}^2=22.419$
+
+Agora o teste, $H_0:\beta_1 =5$ contra $H_1:\beta_1 \neq 5$ tomando a estatística $F_{\widehat\beta,C,d}=\frac{(C\widehat\beta-d)^T[C(X^TX)^{-1}C^T]^{-1}(C\widehat\beta-d)}{k\widehat\sigma^2}$
+
+Tomando a matriz $C=(0 \ 1)$ e $d=5$ e $k=1$, obtendo $$F_{\widehat\beta,C,d}^{obs}=1.08$$ e seu valor-*p*$=\mathbb{P}(F_{k,n-2} > F_{\widehat\beta,C,d}^{obs}) = \mathbb{P}(F_{1,17} > F_{\widehat\beta,C,c}^{obs}) =0.312$. Logo temos evidencias estatísticas para não rejeitar a hipótese nula a um nível de significância de 5%, podemos então utilizar o valor 5 para o $\beta_1$. Podemos realizar o gráfico de dispersão com a curva do modelo após a remoção da observação potencialmente influente, em preto, e a curva sob $H_0$, com $\beta_1=5$, em vermelho. Desse modo podemos ver que a reta preta se ajusta melhor aos dados que a utilizada sob $H_0$, portanto ainda assim seria melhor utilizar o modelo original.
+
+\center
+```{r echo=FALSE, out.width="60%"}
+fit2 <- fit1
+fit2[1]$coefficients[2]=5
+plot(x1,y1,main="Gráfico de dispersão",xlab = "x",ylab = "y",pch=19)
+legend("topleft",c(expression(paste(beta[1]," = 5.642")),expression(paste(beta[1]," = 5"))),lwd=2,lty=c(1,2),bty="n",cex=1.2)
+abline(fit1,lty=1)
+abline(fit2,col=1,lty=2)
+```
